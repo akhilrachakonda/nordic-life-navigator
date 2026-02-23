@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 205 80% 98%;
+    --foreground: 214 36% 17%;
+    --card: 0 0% 100%;
+    --card-foreground: 214 36% 17%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 214 36% 17%;
+    --primary: 217 91% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 204 94% 94%;
+    --secondary-foreground: 217 91% 35%;
+    --muted: 206 58% 95%;
+    --muted-foreground: 214 16% 40%;
+    --accent: 189 94% 93%;
+    --accent-foreground: 194 80% 25%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 212 83% 88%;
+    --input: 212 83% 88%;
+    --ring: 217 91% 55%;
+    --chart-1: 217 91% 55%;
+    --chart-2: 196 96% 44%;
+    --chart-3: 153 67% 40%;
+    --chart-4: 37 92% 50%;
+    --chart-5: 349 89% 60%;
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply text-foreground;
+    font-family: var(--font-sans), 'Avenir Next', 'Segoe UI', sans-serif;
+    background:
+      radial-gradient(900px 500px at -10% -10%, rgba(147, 197, 253, 0.35), transparent 55%),
+      radial-gradient(700px 420px at 110% 10%, rgba(103, 232, 249, 0.24), transparent 48%),
+      hsl(var(--background));
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display), Georgia, serif;
+  }
+}

@@ -1,0 +1,72 @@
+name: Deploy API to Cloud Run
+
+on:
+  push:
+    branches: [main]
+    paths: ['backend/**']
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: europe-north1
+  SERVICE: nln-api
+  IMAGE: gcr.io/${{ secrets.GCP_PROJECT_ID }}/nln-api
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SA_EMAIL }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker --quiet
+
+      - name: Build image
+        working-directory: backend
+        run: |
+          docker build \
+            --cache-from $IMAGE:latest \
+            -t $IMAGE:${{ github.sha }} \
+            -t $IMAGE:latest \
+            -f Dockerfile .
+
+      - name: Push image
+        run: |
+          docker push $IMAGE:${{ github.sha }}
+          docker push $IMAGE:latest
+
+      - name: Deploy to Cloud Run (no traffic)
+        run: |
+          gcloud run deploy $SERVICE \
+            --image $IMAGE:${{ github.sha }} \
+            --region $REGION \
+            --platform managed \
+            --no-traffic \
+            --set-secrets "GEMINI_API_KEY=gemini-api-key:latest" \
+            --set-secrets "DATABASE_URL=database-url:latest" \
+            --set-secrets "CELERY_BROKER_URL=celery-broker-url:latest" \
+            --set-env-vars "GEMINI_MODEL=gemini-2.0-flash" \
+            --min-instances 0 \
+            --max-instances 10 \
+            --memory 512Mi \
+            --cpu 1 \
+            --timeout 300
+
+      - name: Shift traffic to new revision
+        run: |
+          gcloud run services update-traffic $SERVICE \
+            --region $REGION \
+            --to-latest

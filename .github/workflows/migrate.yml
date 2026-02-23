@@ -1,0 +1,40 @@
+name: Run Database Migrations
+
+on:
+  workflow_dispatch:
+    inputs:
+      revision:
+        description: 'Alembic revision target (default: head)'
+        required: false
+        default: 'head'
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: europe-north1
+  IMAGE: gcr.io/${{ secrets.GCP_PROJECT_ID }}/nln-api:latest
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SA_EMAIL }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Run Alembic migrations via Cloud Run Job
+        run: |
+          gcloud run jobs execute nln-migrate \
+            --region $REGION \
+            --args "upgrade,${{ github.event.inputs.revision }}" \
+            --wait

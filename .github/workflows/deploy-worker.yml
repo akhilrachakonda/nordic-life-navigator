@@ -1,0 +1,64 @@
+name: Deploy Worker to Cloud Run
+
+on:
+  push:
+    branches: [main]
+    paths: ['backend/**']
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: europe-north1
+  SERVICE: nln-worker
+  IMAGE: gcr.io/${{ secrets.GCP_PROJECT_ID }}/nln-worker
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SA_EMAIL }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker --quiet
+
+      - name: Build image
+        working-directory: backend
+        run: |
+          docker build \
+            --cache-from $IMAGE:latest \
+            -t $IMAGE:${{ github.sha }} \
+            -t $IMAGE:latest \
+            -f Dockerfile.worker .
+
+      - name: Push image
+        run: |
+          docker push $IMAGE:${{ github.sha }}
+          docker push $IMAGE:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy $SERVICE \
+            --image $IMAGE:${{ github.sha }} \
+            --region $REGION \
+            --platform managed \
+            --no-allow-unauthenticated \
+            --set-secrets "CELERY_BROKER_URL=celery-broker-url:latest" \
+            --set-secrets "DATABASE_URL=database-url:latest" \
+            --min-instances 1 \
+            --max-instances 3 \
+            --memory 512Mi \
+            --cpu 1 \
+            --timeout 600
