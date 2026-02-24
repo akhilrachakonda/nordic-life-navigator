@@ -134,6 +134,7 @@ This repository is configured to prevent accidental credential commits:
   - `frontend/.env.local`
   - `frontend/.env.*.local`
 - Deployment secrets are referenced through GitHub Actions secrets and Cloud Run env settings.
+- Frontend deploy workflow uses Workload Identity Federation (no `FIREBASE_TOKEN` required).
 - If any key/token was ever shared publicly, rotate it immediately in:
   - Google Cloud Console
   - Firebase Console
