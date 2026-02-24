@@ -13,7 +13,7 @@ Nordic Life Navigator is an AI-powered platform that helps international student
 Place screenshots in `docs/screenshots/` with the filenames below.
 
 ![Dashboard](docs/screenshots/dashboard.png)
-![Chat](docs/screenshots/chat.png)
+![Chat](docs/screenshots/chatbot.png)
 
 ## What I Implemented
 
