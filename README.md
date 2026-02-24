@@ -169,6 +169,3 @@ firebase deploy --only hosting --project <PROJECT_ID>
 - Worker deploy workflow: `.github/workflows/deploy-worker.yml`
 - Migration workflow: `.github/workflows/migrate.yml`
 
-## License
-
-MIT (or project default)
