@@ -6,15 +6,20 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.env
+*.env
 
 # Backend local artifacts
 backend/test.db
 backend/dev.db
 backend/chroma_data/
+backend/.env
+backend/serviceAccountKey.json
 
 # Frontend local/build artifacts
 frontend/node_modules/
 frontend/.next/
 frontend/out/
+frontend/.firebase/
 frontend/.env.local
 frontend/.env.*.local
